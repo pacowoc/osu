@@ -28,39 +28,78 @@ namespace osu.Game.Screens.OnlinePlay.Matchmaking.RankedPlay.Components
             beatmapSet = apibeatmap.BeatmapSet!;
             beatmap = apibeatmap;
             this.mods = mods;
-            AutoSizeAxes = Axes.Both;
         }
 
         private readonly APIBeatmapSet beatmapSet;
         private readonly APIBeatmap beatmap;
         private readonly Mod[] mods;
+        private BufferedContainer background = null!;
+        private const float corner_radius = 12;
+        private const float border_thickness = 3;
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)
         {
-            InternalChildren = new Drawable[]
+            RelativeSizeAxes = Axes.X;
+            AutoSizeAxes = Axes.Y;
+            Padding = new MarginPadding
             {
-                new FillFlowContainer
-                {
-                    AutoSizeAxes = Axes.Both,
-                    Direction = FillDirection.Vertical,
-                    Children = new Drawable[]
+                Left = 30,
+                Right = 100,
+                Bottom = 10
+            };
+            InternalChild = new Container
+            {
+                RelativeSizeAxes = Axes.X,
+                AutoSizeAxes = Axes.Y,
+                Children = [
+                    new Container
                     {
+                        RelativeSizeAxes = Axes.Both,
+                        Child = background = new BufferedContainer(cachedFrameBuffer: true)
+                        {
+                            RelativeSizeAxes = Axes.Both,
+                            Child = new Container
+                            {
+                                RelativeSizeAxes = Axes.Both,
+                                Masking = true,
+                                CornerRadius = corner_radius,
+                                BorderThickness = border_thickness,
+                                BorderColour = colours.ForStarDifficulty(beatmap.StarRating).Darken(0.7f),
+                                Children = new Drawable[]
+                                {
+                                    new Box
+                                    {
+                                        RelativeSizeAxes = Axes.Both,
+                                        Colour = Color4Extensions.FromHex("222228"),
+                                        Alpha = 0.7f,
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    new FillFlowContainer
+                    {
+                        Margin = new MarginPadding(10),
+                        Spacing = new Vector2(3, 0),
+                        AutoSizeAxes = Axes.Both,
+                        Direction = FillDirection.Vertical,
+                        Children = new Drawable[]
+                        {
                         new TruncatingSpriteText
                         {
-                            Origin = Anchor.TopCentre,
-                            Anchor = Anchor.TopCentre,
+                            Origin = Anchor.TopLeft,
+                            Anchor = Anchor.TopLeft,
                             Text = new RomanisableString(beatmapSet.TitleUnicode, beatmapSet.Title),
-                            Font = OsuFont.Default.With(size: 32f, weight: FontWeight.Bold),
+                            Font = OsuFont.Default.With(size: 28f, weight: FontWeight.Bold),
                         },
                         new GridContainer
                         {
-                            RelativeSizeAxes = Axes.X,
-                            AutoSizeAxes = Axes.Y,
+                            AutoSizeAxes = Axes.Both,
                             ColumnDimensions = new[]
                             {
                                 new Dimension(GridSizeMode.AutoSize),
-                                new Dimension()
+                                new Dimension(GridSizeMode.AutoSize)
                             },
                             RowDimensions = new[]
                             {
@@ -72,8 +111,8 @@ namespace osu.Game.Screens.OnlinePlay.Matchmaking.RankedPlay.Components
                                 {
                                     new TruncatingSpriteText
                                     {
-                                        Origin = Anchor.TopLeft,
-                                        Anchor = Anchor.TopLeft,
+                                        Origin = Anchor.CentreLeft,
+                                        Anchor = Anchor.CentreLeft,
                                         Text = BeatmapsetsStrings.ShowDetailsByArtist(new RomanisableString(beatmapSet.ArtistUnicode, beatmapSet.Artist)),
                                         Font = OsuFont.Default.With(size: 18f, weight: FontWeight.SemiBold),
                                     },
@@ -81,120 +120,100 @@ namespace osu.Game.Screens.OnlinePlay.Matchmaking.RankedPlay.Components
                                         {
                                             s.Shadow = false;
                                             s.Font = OsuFont.Default.With(size: 18f, weight: FontWeight.SemiBold);
-                                            Origin = Anchor.TopLeft;
-                                            Anchor = Anchor.TopLeft;
+                                            Origin = Anchor.CentreLeft;
+                                            Anchor = Anchor.CentreLeft;
+
                                         }
                                     ).With(d =>
                                         {
-                                            d.AddText("    mapped by ", t => t.Colour = colours.Blue);
+                                            d.AddText("     mapped by ", t => t.Colour = colours.Blue);
                                             d.AddUserLink(beatmapSet.Author);
                                         }
                                     )
                                 },
                             }
                         },
-                        new Container
-                        {
-                            Name = @"Bottom content",
-                            RelativeSizeAxes = Axes.X,
-                            AutoSizeAxes = Axes.Y,
-                            Origin = Anchor.TopCentre,
-                            Anchor = Anchor.TopCentre,
-                            Padding = new MarginPadding
+                        new GridContainer
                             {
-                                Top = 5
-                            },
-                            Children = new Drawable[]
-                            {
-                                new FillFlowContainer
+                                RelativeSizeAxes = Axes.X,
+                                AutoSizeAxes = Axes.Y,
+                                Origin = Anchor.TopLeft,
+                                Anchor = Anchor.TopLeft,
+                                Padding = new MarginPadding
                                 {
-                                    RelativeSizeAxes = Axes.X,
-                                    AutoSizeAxes = Axes.Y,
-                                    Origin = Anchor.TopLeft,
-                                    Anchor = Anchor.TopLeft,
-                                    Direction = FillDirection.Vertical,
-                                    Spacing = new Vector2(0, 2),
-                                    AlwaysPresent = true,
-                                    Children = new Drawable[]
+                                    Top = 5
+                                },
+                                ColumnDimensions = new[]
+                                {
+                                    new Dimension(),
+                                    new Dimension(GridSizeMode.AutoSize)
+                                },
+                                RowDimensions = new[]
+                                {
+                                    new Dimension(GridSizeMode.AutoSize)
+                                },
+                                Content = new[]
+                                {
+                                    new Drawable[]
                                     {
-                                        new GridContainer
+                                        new Container
                                         {
+                                            Masking = true,
+                                            CornerRadius = BeatmapCard.CORNER_RADIUS,
                                             RelativeSizeAxes = Axes.X,
                                             AutoSizeAxes = Axes.Y,
-                                            ColumnDimensions = new[]
+                                            Children = new Drawable[]
                                             {
-                                                new Dimension(),
-                                                new Dimension(GridSizeMode.AutoSize)
-                                            },
-                                            RowDimensions = new[]
-                                            {
-                                                new Dimension(GridSizeMode.AutoSize)
-                                            },
-                                            Content = new[]
-                                            {
-                                                new Drawable[]
+                                                new Box
                                                 {
-                                                    new Container
+                                                    Colour = colours.ForStarDifficulty(beatmap.StarRating).Darken(0.8f),
+                                                    RelativeSizeAxes = Axes.Both,
+                                                },
+                                                new FillFlowContainer
+                                                {
+                                                    Padding = new MarginPadding(4),
+                                                    RelativeSizeAxes = Axes.X,
+                                                    AutoSizeAxes = Axes.Y,
+                                                    Direction = FillDirection.Horizontal,
+                                                    Spacing = new Vector2(6, 0),
+                                                    Children = new Drawable[]
                                                     {
-                                                        Masking = true,
-                                                        CornerRadius = BeatmapCard.CORNER_RADIUS,
-                                                        RelativeSizeAxes = Axes.X,
-                                                        AutoSizeAxes = Axes.Y,
-                                                        Children = new Drawable[]
+                                                        new StarRatingDisplay(new StarDifficulty(beatmap.StarRating, 0), StarRatingDisplaySize.Small, animated: true)
                                                         {
-                                                            new Box
-                                                            {
-                                                                Colour = colours.ForStarDifficulty(beatmap.StarRating).Darken(0.8f),
-                                                                RelativeSizeAxes = Axes.Both,
-                                                            },
-                                                            new FillFlowContainer
-                                                            {
-                                                                Padding = new MarginPadding(4),
-                                                                RelativeSizeAxes = Axes.X,
-                                                                AutoSizeAxes = Axes.Y,
-                                                                Direction = FillDirection.Horizontal,
-                                                                Spacing = new Vector2(6, 0),
-                                                                Children = new Drawable[]
-                                                                {
-                                                                    new StarRatingDisplay(new StarDifficulty(beatmap.StarRating, 0), StarRatingDisplaySize.Small, animated: true)
-                                                                    {
-                                                                        Origin = Anchor.CentreLeft,
-                                                                        Anchor = Anchor.CentreLeft,
-                                                                        Scale = new Vector2(0.9f),
-                                                                    },
-                                                                    new TruncatingSpriteText
-                                                                    {
-                                                                        Text = beatmap.DifficultyName,
-                                                                        Font = OsuFont.Style.Caption1.With(weight: FontWeight.Bold),
-                                                                        Colour = colours.ForStarDifficultyText(beatmap.StarRating),
-                                                                        Anchor = Anchor.CentreLeft,
-                                                                        Origin = Anchor.CentreLeft,
-                                                                    },
-                                                                }
-                                                            },
-                                                        }
-                                                    },
-                                                    new Container
-                                                    {
-                                                        AutoSizeAxes = Axes.Both,
-                                                        Alpha = mods.Length > 0 ? 1 : 0,
-                                                        Child = new ModFlowDisplay
+                                                            Origin = Anchor.CentreLeft,
+                                                            Anchor = Anchor.CentreLeft,
+                                                            Scale = new Vector2(0.9f),
+                                                        },
+                                                        new TruncatingSpriteText
                                                         {
-                                                            AutoSizeAxes = Axes.Both,
-                                                            Scale = new Vector2(0.5f),
-                                                            Margin = new MarginPadding { Left = 5 },
-                                                            Current = { Value = mods },
-                                                        }
+                                                            Text = beatmap.DifficultyName,
+                                                            Font = OsuFont.Style.Caption1.With(weight: FontWeight.Bold),
+                                                            Colour = colours.ForStarDifficultyText(beatmap.StarRating),
+                                                            Anchor = Anchor.CentreLeft,
+                                                            Origin = Anchor.CentreLeft,
+                                                        },
                                                     }
                                                 },
                                             }
                                         },
-                                    }
+                                        new Container
+                                        {
+                                            AutoSizeAxes = Axes.Both,
+                                            Alpha = mods.Length > 0 ? 1 : 0,
+                                            Child = new ModFlowDisplay
+                                            {
+                                                AutoSizeAxes = Axes.Both,
+                                                Scale = new Vector2(0.5f),
+                                                Margin = new MarginPadding { Left = 5 },
+                                                Current = { Value = mods },
+                                            }
+                                        }
+                                    },
                                 }
-                            }
+                            },
                         }
-                    }
-                },
+                    },
+                ]
             };
         }
 
